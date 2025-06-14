@@ -5,26 +5,31 @@ class Job {
   final String title;
   final String description;
   final DateTime createdAt;
+  final DateTime? deadline;
 
   Job({
     required this.id,
     required this.title,
     required this.description,
     required this.createdAt,
+    this.deadline,
   });
 
   // Convert Firestore document to Job object
   factory Job.fromFirestore(DocumentSnapshot doc) {
     var data = doc.data() as Map<String, dynamic>;
 
-    // Handle 'createdAt' field being either Timestamp or String
+    // Handle the 'createdAt' and 'deadline' fields (could be Timestamp or String)
     DateTime createdAt;
     if (data['createdAt'] is Timestamp) {
       createdAt = (data['createdAt'] as Timestamp).toDate();
-    } else if (data['createdAt'] is String) {
-      createdAt = DateTime.tryParse(data['createdAt']) ?? DateTime.now();  // Fallback to now if invalid
     } else {
-      createdAt = DateTime.now();  // Default to current date if no valid date
+      createdAt = DateTime.now(); // Fallback to now if no valid date
+    }
+
+    DateTime? deadline;
+    if (data['deadline'] is Timestamp) {
+      deadline = (data['deadline'] as Timestamp).toDate();
     }
 
     return Job(
@@ -32,6 +37,7 @@ class Job {
       title: data['title'] ?? '',
       description: data['description'] ?? '',
       createdAt: createdAt,
+      deadline: deadline,
     );
   }
 
@@ -40,7 +46,31 @@ class Job {
     return {
       'title': title,
       'description': description,
-      'createdAt': Timestamp.fromDate(createdAt),  // Store as Timestamp
+      'createdAt': Timestamp.fromDate(createdAt),
+      'deadline': deadline != null ? Timestamp.fromDate(deadline!) : null,
     };
+  }
+
+  // Fetch applicants for this job from Firestore
+  Future<List<Map<String, dynamic>>> fetchApplicants() async {
+    var snapshot = await FirebaseFirestore.instance
+        .collection('jobs')
+        .doc(id)
+        .collection('applicants')
+        .get();
+    return snapshot.docs.map((doc) => doc.data() as Map<String, dynamic>).toList();
+  }
+
+  // Add an applicant to this job
+  Future<void> addApplicant(Map<String, dynamic> applicantData) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('jobs')
+          .doc(id)
+          .collection('applicants')
+          .add(applicantData);
+    } catch (e) {
+      throw Exception('Error adding applicant: $e');
+    }
   }
 }
