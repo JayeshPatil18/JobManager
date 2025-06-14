@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "606025925271",
+    "project_id": "jobmanager-9aa4a",
+    "storage_bucket": "jobmanager-9aa4a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:606025925271:android:9b850f8a0061fc8e435fd2",
+        "android_client_info": {
+          "package_name": "com.apps.job_manager"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDBibVeRQVABAYQKFlZ1KRNuqQY-OwMUS8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
