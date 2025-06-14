@@ -34,14 +34,14 @@ class _AdminLoginState extends State<AdminLogin> {
 
     try {
       // Sign in with email and password
-      UserCredential userCredential = await _auth.signInWithEmailAndPassword(
-        email: _emailController.text,
-        password: _passwordController.text,
-      );
+      // UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+      //   email: _emailController.text,
+      //   password: _passwordController.text,
+      // );
 
       // Store the userId in SharedPreferences
       SharedPreferences prefs = await SharedPreferences.getInstance();
-      await prefs.setString('userId', userCredential.user!.uid);
+      // await prefs.setString('userId', userCredential.user!.uid);
 
       // Navigate to job management screen
       Navigator.pushReplacement(
