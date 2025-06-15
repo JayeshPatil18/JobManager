@@ -100,4 +100,15 @@ class JobService {
       throw Exception('Error fetching users: $e');
     }
   }
+
+  Future<void> updateApplicantStatus(String applicantId, String status) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('applicants') // Assuming you have a separate 'applicants' collection
+          .doc(applicantId)
+          .update({'status': status});
+    } catch (e) {
+      throw Exception('Error updating applicant status: $e');
+    }
+  }
 }
