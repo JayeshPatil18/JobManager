@@ -3,6 +3,7 @@ import 'package:job_manager/services/job_service.dart';
 import 'package:job_manager/models/job.dart';
 import '../main.dart';
 import '../services/auth_service.dart';
+import '../widgets/job_card.dart';
 import 'job_detail.dart'; // To navigate to job details and apply
 
 class JobListings extends StatefulWidget {
@@ -115,7 +116,7 @@ class _JobListingsState extends State<JobListings> {
           ),
         ),
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(6.0),
           child: Column(
             children: [
               // Search Bar with styling
@@ -141,51 +142,9 @@ class _JobListingsState extends State<JobListings> {
                   itemCount: _filteredJobs.length,
                   itemBuilder: (context, index) {
                     Job job = _filteredJobs[index];
-                    return FutureBuilder<bool>(
-                      future: _jobService.hasApplied(job.jobId, MyApp.loggedInUserId),
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState == ConnectionState.waiting) {
-                          return const CircularProgressIndicator();
-                        }
-
-                        bool hasApplied = snapshot.data ?? false;
-
-                        return Card(
-                          margin: const EdgeInsets.symmetric(vertical: 8),
-                          elevation: 5,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: ListTile(
-                            contentPadding: const EdgeInsets.all(16.0),
-                            title: Text(
-                              job.title,
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black,
-                              ),
-                            ),
-                            subtitle: Text(
-                              job.description,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(color: Colors.black54),
-                            ),
-                            trailing: hasApplied
-                                ? const Chip(label: Text('Applied'))
-                                : null,
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => JobDetail(job: job, userId: MyApp.loggedInUserId),
-                                ),
-                              );
-                            },
-                          ),
-                        );
-                      },
+                    return JobCard(
+                      job: job,
+                      userId: MyApp.loggedInUserId, // Pass userId to the JobCard widget
                     );
                   },
                 ),
