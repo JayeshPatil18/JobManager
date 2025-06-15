@@ -298,125 +298,139 @@ class _JobManagementState extends State<JobManagement> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Manage Jobs')),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            // Job title and description inputs
-            TextFormField(
-              controller: _titleController,
-              decoration: const InputDecoration(
-                labelText: 'Job Title',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _descriptionController,
-              decoration: const InputDecoration(
-                labelText: 'Job Description',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 16),
-            // Select Deadline and buttons
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      body: Container(
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage("assets/images/bg_dashboard.jpg"),
+            fit: BoxFit.cover,
+          ),
+        ),
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
               children: [
-                TextButton(
-                  onPressed: _selectDeadline,
-                  child: Text(_jobDeadline == null
-                      ? 'Select Deadline'
-                      : 'Deadline: ${_jobDeadline!.toLocal()}'),
+                // Job title and description inputs
+                TextFormField(
+                  controller: _titleController,
+                  decoration: InputDecoration(
+                    labelText: 'Job Title',
+                    filled: true,
+                    fillColor: Colors.white.withOpacity(0.3), // very light white
+                    border: OutlineInputBorder(),
+                  ),
                 ),
-                ElevatedButton(
-                  onPressed: () {
-                    if (_editingJobId == null) {
-                      _addJob();
-                    } else {
-                      _updateJob(_editingJobId!);
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _descriptionController,
+                  decoration: InputDecoration(
+                    labelText: 'Job Description',
+                    filled: true,
+                    fillColor: Colors.white.withOpacity(0.3), // very light white
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                // Select Deadline and buttons
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    TextButton(
+                      onPressed: _selectDeadline,
+                      child: Text(_jobDeadline == null
+                          ? 'Select Deadline'
+                          : 'Deadline: ${_jobDeadline!.toLocal()}'),
                     ),
-                  ),
-                  child: Text(_editingJobId == null ? 'Add Job' : 'Update Job'),
-                ),
-              ],
-            ),
-            if (_editingJobId != null)
-              ElevatedButton(
-                onPressed: () => _clearFields(),
-                style: ElevatedButton.styleFrom(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: const Text('Cancel Editing'),
-              ),
-            const SizedBox(height: 16),
-            // Job List
-            Expanded(
-              child: StreamBuilder<QuerySnapshot>(
-                stream: FirebaseFirestore.instance.collection('jobs').snapshots(),
-                builder: (context, snapshot) {
-                  if (!snapshot.hasData) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-
-                  var jobs = snapshot.data!.docs
-                      .map((doc) => Job.fromFirestore(doc))
-                      .toList();
-
-                  return ListView.builder(
-                    itemCount: jobs.length,
-                    itemBuilder: (context, index) {
-                      var job = jobs[index];
-                      return Card(
-                        margin: const EdgeInsets.symmetric(vertical: 8),
-                        elevation: 5,
+                    ElevatedButton(
+                      onPressed: () {
+                        if (_editingJobId == null) {
+                          _addJob();
+                        } else {
+                          _updateJob(_editingJobId!);
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: ListTile(
-                          contentPadding: const EdgeInsets.all(16.0),
-                          title: Text(job.title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                          subtitle: Text(job.description, maxLines: 2, overflow: TextOverflow.ellipsis),
-                          trailing: FutureBuilder<int>(
-                            future: _fetchApplicantsCount(job.jobId),
-                            builder: (context, applicantSnapshot) {
-                              if (!applicantSnapshot.hasData) {
-                                return const CircularProgressIndicator();
-                              }
-                              return Chip(
-                                label: Text('${applicantSnapshot.data} Applicants'),
-                              );
-                            },
-                          ),
-                          onTap: () async {
-                            List<Map<String, dynamic>> applicants = await _jobService.fetchApplicants(job.jobId);
-                            if (applicants.isNotEmpty) {
-                              // Show Bottom Sheet when an applicant is tapped
-                              _showApplicantBottomSheet(applicants);
-                            } else {
-                              _showError('No applicants yet.');
-                            }
-                          },
-                          // Added Edit and Delete Buttons
-                          onLongPress: () {
-                            // Show options to edit or delete job
-                            _showJobOptionsDialog(job);
-                          },
-                        ),
+                      ),
+                      child: Text(_editingJobId == null ? 'Add Job' : 'Update Job'),
+                    ),
+                  ],
+                ),
+                if (_editingJobId != null)
+                  ElevatedButton(
+                    onPressed: () => _clearFields(),
+                    style: ElevatedButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text('Cancel Editing'),
+                  ),
+                const SizedBox(height: 16),
+                // Job List
+                Expanded(
+                  child: StreamBuilder<QuerySnapshot>(
+                    stream: FirebaseFirestore.instance.collection('jobs').snapshots(),
+                    builder: (context, snapshot) {
+                      if (!snapshot.hasData) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+
+                      var jobs = snapshot.data!.docs
+                          .map((doc) => Job.fromFirestore(doc))
+                          .toList();
+
+                      return ListView.builder(
+                        itemCount: jobs.length,
+                        itemBuilder: (context, index) {
+                          var job = jobs[index];
+                          return Card(
+                            margin: const EdgeInsets.symmetric(vertical: 8),
+                            elevation: 5,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: ListTile(
+                              contentPadding: const EdgeInsets.all(16.0),
+                              title: Text(job.title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                              subtitle: Text(job.description, maxLines: 2, overflow: TextOverflow.ellipsis),
+                              trailing: FutureBuilder<int>(
+                                future: _fetchApplicantsCount(job.jobId),
+                                builder: (context, applicantSnapshot) {
+                                  if (!applicantSnapshot.hasData) {
+                                    return const CircularProgressIndicator();
+                                  }
+                                  return Chip(
+                                    label: Text('${applicantSnapshot.data} Applicants'),
+                                  );
+                                },
+                              ),
+                              onTap: () async {
+                                List<Map<String, dynamic>> applicants = await _jobService.fetchApplicants(job.jobId);
+                                if (applicants.isNotEmpty) {
+                                  // Show Bottom Sheet when an applicant is tapped
+                                  _showApplicantBottomSheet(applicants);
+                                } else {
+                                  _showError('No applicants yet.');
+                                }
+                              },
+                              // Added Edit and Delete Buttons
+                              onLongPress: () {
+                                // Show options to edit or delete job
+                                _showJobOptionsDialog(job);
+                              },
+                            ),
+                          );
+                        },
                       );
                     },
-                  );
-                },
-              ),
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
