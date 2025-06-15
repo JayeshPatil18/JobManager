@@ -17,6 +17,7 @@ class _AdminLoginState extends State<AdminLogin> {
   final TextEditingController _passwordController = TextEditingController();
   bool _isLoading = false;
   String? _errorMessage;
+  String _selectedRole = 'admin'; // Default role is admin
 
   @override
   void initState() {
@@ -25,7 +26,7 @@ class _AdminLoginState extends State<AdminLogin> {
   }
 
   // Function to handle login
-  Future<void> _login() async {
+  Future<void> _login(String loginAs) async {
     setState(() {
       _isLoading = true;
       _errorMessage = null;
@@ -35,7 +36,8 @@ class _AdminLoginState extends State<AdminLogin> {
       try {
         final LoginService _loginService = LoginService();
 
-        String result = await _loginService.loginWithEmailPassword(_emailController.text, _passwordController.text);
+        String result = await _loginService.loginWithEmailPassword(
+            _emailController.text, _passwordController.text, loginAs);
 
         if(result == 'Login successful') {
           // Navigate to job management screen
@@ -106,10 +108,36 @@ class _AdminLoginState extends State<AdminLogin> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          'Admin Login',
+                          'Login',
                           style: Theme.of(context).textTheme.headline6,
                         ),
                         const SizedBox(height: 20),
+                        // Dropdown for selecting role (Admin or Applicant)
+                        DropdownButtonFormField<String>(
+                          value: _selectedRole,
+                          onChanged: (newRole) {
+                            setState(() {
+                              _selectedRole = newRole!;
+                            });
+                          },
+                          items: [
+                            DropdownMenuItem(
+                              value: 'admin',
+                              child: Text('Login as Admin'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'applicant',
+                              child: Text('Login as Applicant'),
+                            ),
+                          ],
+                          decoration: InputDecoration(
+                            labelText: 'Select Role',
+                            border: OutlineInputBorder(),
+                            prefixIcon: Icon(Icons.account_circle),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        // Email input
                         TextFormField(
                           controller: _emailController,
                           decoration: const InputDecoration(
@@ -128,6 +156,7 @@ class _AdminLoginState extends State<AdminLogin> {
                           },
                         ),
                         const SizedBox(height: 16),
+                        // Password input
                         TextFormField(
                           controller: _passwordController,
                           decoration: const InputDecoration(
@@ -146,10 +175,11 @@ class _AdminLoginState extends State<AdminLogin> {
                           },
                         ),
                         const SizedBox(height: 24),
+                        // Login button
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(
-                            onPressed: _login,
+                            onPressed: () => _login(_selectedRole), // Pass the selected role here
                             child: _isLoading
                                 ? const CircularProgressIndicator(color: Colors.white)
                                 : const Text('Login'),

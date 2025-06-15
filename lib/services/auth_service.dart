@@ -7,22 +7,25 @@ class LoginService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // Method to login with email and password
-  Future<String> loginWithEmailPassword(String email, String password) async {
+  // Method to login with email, password, and role
+  Future<String> loginWithEmailPassword(String email, String password, String loginAs) async {
     try {
       // Get all users and filter by email
       QuerySnapshot snapshot = await _firestore.collection('users').get();
 
-        print('####### ${snapshot.docs}');
+      print('####### ${snapshot.docs}');
 
       // Iterate through the documents to check the email
       for (var userDoc in snapshot.docs) {
-
-
         if (userDoc['email'] == email) {
-
-          if(userDoc['password'] != password) {
+          // Check password match
+          if (userDoc['password'] != password) {
             return 'Wrong password';
+          }
+
+          // Check if the user has the correct role
+          if (userDoc['role'] != loginAs) {
+            return 'Invalid role for login type';
           }
 
           String userId = userDoc['userId'];  // Fetch userId from the document
@@ -30,6 +33,7 @@ class LoginService {
 
           // Store userId and role in SharedPreferences
           await _storeUserData(userId, role);
+
           return 'Login successful';
         }
       }
