@@ -70,9 +70,13 @@ class JobService {
   }
 
   // Add a new application
-  Future<void> addApplication(Map<String, dynamic> applicationData) async {
+  Future<String> addApplication(Map<String, dynamic> applicationData) async {
     try {
-      await _firestore.collection('applications').add(applicationData);
+      // Add the application and get the document reference
+      var docRef = await _firestore.collection('applications').add(applicationData);
+
+      // Return the document ID
+      return docRef.id;
     } catch (e) {
       throw Exception('Error adding application: $e');
     }

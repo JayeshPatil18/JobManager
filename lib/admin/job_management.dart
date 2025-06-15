@@ -113,7 +113,6 @@ class _JobManagementState extends State<JobManagement> {
     }
   }
 
-
   void _showApplicantBottomSheet(List<Map<String, dynamic>> applicants) {
     showModalBottomSheet(
       context: context,
@@ -125,7 +124,13 @@ class _JobManagementState extends State<JobManagement> {
             mainAxisSize: MainAxisSize.min,
             children: [
               // Title
-              Text('Applicants:', style: Theme.of(context).textTheme.headline6),
+              Text(
+                'Applicants:',
+                style: Theme.of(context).textTheme.headline6?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.deepPurple,
+                ),
+              ),
               const SizedBox(height: 12),
 
               // List applicants with better UI
@@ -150,131 +155,61 @@ class _JobManagementState extends State<JobManagement> {
                       },
                       child: Card(
                         margin: const EdgeInsets.symmetric(vertical: 8),
-                        elevation: 5,
+                        elevation: 8,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: ListTile(
-                          contentPadding: const EdgeInsets.all(16.0),
-                          title: Text(
-                            applicant['name'],
-                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        // Border added here
+                        child: Container(
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                              color: Colors.deepPurple, // Border color
+                              width: 1.5, // Border width
+                            ),
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                          subtitle: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Status: ${applicant['status']}'),
-                              Text('Phone: ${applicant['phone']}'),
-                              Text('Applied At: ${appliedAt.toLocal()}'),
-                            ],
+                          child: ListTile(
+                            contentPadding: const EdgeInsets.all(16.0),
+                            title: Text(
+                              applicant['name'],
+                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                            ),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const SizedBox(height: 4),
+                                Row(
+                                  children: [
+                                    Icon(Icons.phone, size: 16, color: Colors.grey),
+                                    const SizedBox(width: 4),
+                                    Text('Phone: ${applicant['phone']}'),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                                Row(
+                                  children: [
+                                    Icon(Icons.access_time, size: 16, color: Colors.grey),
+                                    const SizedBox(width: 4),
+                                    Text('Applied At: ${appliedAt.toLocal()}'),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                                Row(
+                                  children: [
+                                    Icon(Icons.info_outline, size: 16, color: Colors.grey),
+                                    const SizedBox(width: 4),
+                                    Text('Status: ${applicant['status']}'),
+                                  ],
+                                ),
+                              ],
+                            ),
+                            trailing: Icon(Icons.arrow_forward_ios, size: 20, color: Colors.deepPurple),
                           ),
                         ),
                       ),
                     );
                   },
                 ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-
-  // Show individual applicant details when tapped
-  void _showApplicantDetails(Map<String, dynamic> applicant) {
-    String applicantStatus = applicant['status'] ?? 'Pending';
-
-    showModalBottomSheet(
-      context: context,
-      builder: (context) {
-        return Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Applicant's Name
-              Text(applicant['name'], style: Theme.of(context).textTheme.headline6),
-              const SizedBox(height: 12),
-              Text('Resume: ${applicant['resumeURL']}',
-                  style: Theme.of(context).textTheme.bodyText2),
-              const SizedBox(height: 8),
-              Text('LinkedIn: ${applicant['linkedinURL']}',
-                  style: Theme.of(context).textTheme.bodyText2),
-              Text('GitHub: ${applicant['githubURL']}',
-                  style: Theme.of(context).textTheme.bodyText2),
-              const SizedBox(height: 16),
-
-              // Status update section
-              Text('Update Status:', style: Theme.of(context).textTheme.subtitle1),
-              const SizedBox(height: 8),
-
-              // Radio buttons for status selection
-              Column(
-                children: <String>['pending', 'accepted', 'rejected', 'interviewed']
-                    .map((String value) {
-                  return RadioListTile<String>(
-                    title: Text(value),
-                    value: value,
-                    groupValue: applicantStatus,
-                    onChanged: (String? newStatus) async {
-                      if (newStatus != null && newStatus != applicantStatus) {
-                        setState(() {
-                          applicant['status'] = newStatus;  // Update local state
-                        });
-
-                        try {
-                          await _jobService.updateApplicantStatus(applicant['applicantId'], newStatus);
-                          _showSuccess('Applicant status updated successfully!');
-
-                          Future.delayed(Duration(seconds: 2), () {
-                            Navigator.pop(context);
-                          });
-
-                        } catch (e) {
-                          _showError('Error updating applicant status.');
-                        }
-                      }
-                    },
-                  );
-                }).toList(),
-              ),
-              const SizedBox(height: 16),
-
-              // Buttons to open LinkedIn, GitHub, and Resume links
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  ElevatedButton(
-                    onPressed: () => _openUrl(applicant['linkedinURL']),
-                    child: const Text('Open LinkedIn'),
-                    style: ElevatedButton.styleFrom(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                  ),
-                  ElevatedButton(
-                    onPressed: () => _openUrl(applicant['githubURL']),
-                    child: const Text('Open GitHub'),
-                    style: ElevatedButton.styleFrom(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                  ),
-                  ElevatedButton(
-                    onPressed: () => _openUrl(applicant['resumeURL']),
-                    child: const Text('Open Resume'),
-                    style: ElevatedButton.styleFrom(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                  ),
-                ],
               ),
             ],
           ),

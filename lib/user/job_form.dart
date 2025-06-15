@@ -75,7 +75,7 @@ class _JobApplicationFormState extends State<JobApplicationForm> {
   void _applyForJob() async {
     if (_formKey.currentState!.validate()) {
       try {
-        await JobService().addApplication({
+        String applicationId = await JobService().addApplication({
           'jobId': widget.job.jobId,
           'userId': widget.userId,
           'name': _nameController.text,
@@ -90,6 +90,11 @@ class _JobApplicationFormState extends State<JobApplicationForm> {
           'counterOffer': _counterOfferController.text,
           'status': 'pending',
           'appliedAt': Timestamp.now(),
+        });
+
+        // Now update the application document with the applicationId
+        await FirebaseFirestore.instance.collection('applications').doc(applicationId).update({
+          'applicationId': applicationId,
         });
 
         await FirebaseFirestore.instance.collection('users').doc(widget.userId).update({
