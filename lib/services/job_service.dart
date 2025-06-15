@@ -101,6 +101,33 @@ class JobService {
     }
   }
 
+  // Search jobs by keywords
+  Future<List<Job>> searchJobs(String keyword) async {
+    try {
+      var snapshot = await _firestore.collection('jobs')
+          .where('title', isGreaterThanOrEqualTo: keyword)
+          .where('title', isLessThanOrEqualTo: keyword + '\uf8ff') // For full-text search like behavior
+          .get();
+      return snapshot.docs.map((doc) => Job.fromFirestore(doc)).toList();
+    } catch (e) {
+      throw Exception('Error searching jobs: $e');
+    }
+  }
+
+  // Check if the user has already applied for the job
+  Future<bool> hasApplied(String jobId, String userId) async {
+    try {
+      var snapshot = await _firestore
+          .collection('applications')
+          .where('jobId', isEqualTo: jobId)
+          .where('userId', isEqualTo: userId)
+          .get();
+      return snapshot.docs.isNotEmpty;
+    } catch (e) {
+      throw Exception('Error checking if user has applied: $e');
+    }
+  }
+
   Future<void> updateApplicantStatus(String applicantId, String status) async {
     try {
       await FirebaseFirestore.instance

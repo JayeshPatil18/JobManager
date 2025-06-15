@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:job_manager/services/auth_service.dart';
+import 'package:job_manager/user/job_listings.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'job_management.dart'; // Import the job management screen
 
@@ -66,19 +67,32 @@ class _AdminLoginState extends State<AdminLogin> {
     }
   }
 
-  // Check if the user is already logged in
+// Check if the user is already logged in
   Future<void> _checkUserLoginStatus() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? userId = prefs.getString('userId');
+    String? role = prefs.getString('role'); // Retrieve the role
 
-    if (userId != null) {
-      // User is already logged in, skip login screen and navigate to JobManagement
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const JobManagement()),
-      );
+    if (userId != null && role != null) {
+      // User is already logged in
+      // Navigate to the appropriate screen based on the role
+
+      print('###${role}');
+
+      if (role == 'admin') {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const JobManagement()),
+        );
+      } else if (role == 'applicant') {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const JobListings()), // Update with the applicant's screen
+        );
+      }
     }
   }
+
 
   @override
   Widget build(BuildContext context) {

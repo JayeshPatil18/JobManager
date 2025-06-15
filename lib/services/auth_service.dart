@@ -13,8 +13,6 @@ class LoginService {
       // Get all users and filter by email
       QuerySnapshot snapshot = await _firestore.collection('users').get();
 
-      print('####### ${snapshot.docs}');
-
       // Iterate through the documents to check the email
       for (var userDoc in snapshot.docs) {
         if (userDoc['email'] == email) {
