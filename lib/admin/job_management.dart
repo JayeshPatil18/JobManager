@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:url_launcher/url_launcher.dart'; // Add this for opening links
+import 'package:url_launcher/url_launcher.dart'; // For opening links
 import '../models/job.dart';
 import '../services/job_service.dart';
 
@@ -127,11 +127,8 @@ class _JobManagementState extends State<JobManagement> {
     }
   }
 
-  // Bottom sheet to show applicant details
-  void _showApplicantBottomSheet(Map<String, dynamic> applicant) {
-    // Ensure the applicant's status is one of the valid values
-    String applicantStatus = applicant['status'] ?? 'Pending';
-
+  // Bottom sheet to show applicants list and applicant details
+  void _showApplicantBottomSheet(List<Map<String, dynamic>> applicants) {
     showModalBottomSheet(
       context: context,
       builder: (context) {
@@ -141,6 +138,48 @@ class _JobManagementState extends State<JobManagement> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
+              // Applicants List
+              Text('Applicants:', style: Theme.of(context).textTheme.headline6),
+              const SizedBox(height: 12),
+              Expanded(
+                child: ListView.builder(
+                  itemCount: applicants.length,
+                  itemBuilder: (context, index) {
+                    var applicant = applicants[index];
+                    return Card(
+                      margin: const EdgeInsets.symmetric(vertical: 8),
+                      elevation: 5,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: ListTile(
+                        title: Text(applicant['name']),
+                        subtitle: Text('LinkedIn: ${applicant['linkedinURL']}'),
+                        onTap: () => _showApplicantDetails(applicant),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  // Show individual applicant details when tapped
+  void _showApplicantDetails(Map<String, dynamic> applicant) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Applicant's Name
               Text(applicant['name'], style: Theme.of(context).textTheme.headline6),
               const SizedBox(height: 12),
               Text('Resume: ${applicant['resumeURL']}',
@@ -152,36 +191,7 @@ class _JobManagementState extends State<JobManagement> {
                   style: Theme.of(context).textTheme.bodyText2),
               const SizedBox(height: 16),
 
-              // Status dropdown for updating the status
-              Text('Update Status:', style: Theme.of(context).textTheme.subtitle1),
-              const SizedBox(height: 8),
-              // DropdownButton<String>(
-              //   value: applicantStatus, // Use the applicant's current status
-              //   isExpanded: true,
-              //   items: <String>['Pending', 'Interviewed', 'Rejected', 'Hired']
-              //       .map((String value) {
-              //     return DropdownMenuItem<String>(
-              //       value: value,
-              //       child: Text(value),
-              //     );
-              //   }).toList(),
-              //   onChanged: (newStatus) async {
-              //     if (newStatus != null) {
-              //       // Update the status in Firestore
-              //       applicant['status'] = newStatus;
-              //
-              //       try {
-              //         await _jobService.updateApplicantStatus(applicant['applicantId'], newStatus);
-              //         setState(() {}); // Refresh the UI to reflect the changes
-              //       } catch (e) {
-              //         _showError('Error updating applicant status.');
-              //       }
-              //     }
-              //   },
-              // ),
-              const SizedBox(height: 16),
-
-              // Buttons to open LinkedIn, GitHub, and Resume
+              // Buttons to open LinkedIn, GitHub, and Resume links
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -326,7 +336,7 @@ class _JobManagementState extends State<JobManagement> {
                             List<Map<String, dynamic>> applicants = await _jobService.fetchApplicants(job.jobId);
                             if (applicants.isNotEmpty) {
                               // Show Bottom Sheet when an applicant is tapped
-                              _showApplicantBottomSheet(applicants[0]);
+                              _showApplicantBottomSheet(applicants);
                             } else {
                               _showError('No applicants yet.');
                             }
