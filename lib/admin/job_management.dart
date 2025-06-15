@@ -24,8 +24,8 @@ class _JobManagementState extends State<JobManagement> {
   DateTime? _jobDeadline;
 
   Future<void> _addJob() async {
-    if (_titleController.text.isEmpty || _descriptionController.text.isEmpty) {
-      _showError('Title and Description cannot be empty.');
+    if (_titleController.text.isEmpty || _descriptionController.text.isEmpty || _jobDeadline == null) {
+      _showError('Title, Description, and Deadline are required.');
       return;
     }
 
@@ -46,8 +46,8 @@ class _JobManagementState extends State<JobManagement> {
   }
 
   Future<void> _updateJob(String jobId) async {
-    if (_titleController.text.isEmpty || _descriptionController.text.isEmpty) {
-      _showError('Title and Description cannot be empty.');
+    if (_titleController.text.isEmpty || _descriptionController.text.isEmpty || _jobDeadline == null) {
+      _showError('Title, Description, and Deadline are required.');
       return;
     }
 
@@ -297,7 +297,6 @@ class _JobManagementState extends State<JobManagement> {
     );
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -306,7 +305,7 @@ class _JobManagementState extends State<JobManagement> {
         title: Row(
           children: [
             SizedBox(width: 10),
-            Text('Manange Jobs'),
+            Text('Manage Jobs'),
           ],
         ),
         automaticallyImplyLeading: false,
@@ -359,7 +358,7 @@ class _JobManagementState extends State<JobManagement> {
                     TextButton(
                       onPressed: _selectDeadline,
                       child: Text(_jobDeadline == null
-                          ? 'Select Deadline'
+                          ? 'Select Deadline (Required)'
                           : 'Deadline: ${_jobDeadline!.toLocal()}'),
                     ),
                     ElevatedButton(
