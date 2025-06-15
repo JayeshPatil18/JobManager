@@ -341,6 +341,8 @@ class _JobManagementState extends State<JobManagement> {
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
+                  maxLines: 8,
+                  minLines: 2,
                   controller: _descriptionController,
                   decoration: InputDecoration(
                     labelText: 'Job Description',

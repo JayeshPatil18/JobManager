@@ -41,12 +41,20 @@ class _AdminLoginState extends State<AdminLogin> {
         String result = await _loginService.loginWithEmailPassword(
             _emailController.text, _passwordController.text, loginAs);
 
-        if(result == 'Login successful') {
-          // Navigate to job management screen
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const JobManagement()),
-          );
+        if(result.contains('Login successful')) {
+
+          if(result.contains('admin')) {
+            // Navigate to job management screen
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const JobManagement()),
+            );
+          } else if (result.contains('applicant')){
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const JobListings()),
+            );
+          }
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(result)),
@@ -100,7 +108,7 @@ class _AdminLoginState extends State<AdminLogin> {
     return Scaffold(
       appBar: AppBar(
           backgroundColor: Colors.deepPurple, // Consistent background color
-          title: const Text('Admin Login')
+          title: const Text('Welcome to Jober')
       ),
       body: Container(
         decoration: BoxDecoration(

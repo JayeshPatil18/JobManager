@@ -32,7 +32,7 @@ class LoginService {
           // Store userId and role in SharedPreferences
           await _storeUserData(userId, role);
 
-          return 'Login successful';
+          return 'Login successful as ${role}';
         }
       }
 
