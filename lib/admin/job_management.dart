@@ -109,7 +109,7 @@ class _JobManagementState extends State<JobManagement> {
     }
   }
 
-// Method to show applicant details with status update functionality
+  // Method to show applicant details with status update functionality
   void _showApplicantBottomSheet(List<Map<String, dynamic>> applicants) {
     showModalBottomSheet(
       context: context,
@@ -155,9 +155,8 @@ class _JobManagementState extends State<JobManagement> {
     );
   }
 
-// Show individual applicant details when tapped
+  // Show individual applicant details when tapped
   void _showApplicantDetails(Map<String, dynamic> applicant) {
-    // Ensure the applicant's status is one of the valid values
     String applicantStatus = applicant['status'] ?? 'Pending';
 
     showModalBottomSheet(
@@ -195,15 +194,18 @@ class _JobManagementState extends State<JobManagement> {
                     groupValue: applicantStatus,
                     onChanged: (String? newStatus) async {
                       if (newStatus != null && newStatus != applicantStatus) {
-                        // Update the status in Firestore
                         setState(() {
                           applicant['status'] = newStatus;  // Update local state
                         });
 
                         try {
                           await _jobService.updateApplicantStatus(applicant['applicantId'], newStatus);
-
                           _showSuccess('Applicant status updated successfully!');
+
+                          Future.delayed(Duration(seconds: 2), () {
+                            Navigator.pop(context);
+                          });
+
                         } catch (e) {
                           _showError('Error updating applicant status.');
                         }
@@ -254,7 +256,7 @@ class _JobManagementState extends State<JobManagement> {
     );
   }
 
-// Method to show success message
+  // Method to show success message
   void _showSuccess(String message) {
     showDialog(
       context: context,
@@ -273,7 +275,7 @@ class _JobManagementState extends State<JobManagement> {
     );
   }
 
-// Method to show error message
+  // Method to show error message
   void _showError(String message) {
     showDialog(
       context: context,
@@ -402,6 +404,11 @@ class _JobManagementState extends State<JobManagement> {
                               _showError('No applicants yet.');
                             }
                           },
+                          // Added Edit and Delete Buttons
+                          onLongPress: () {
+                            // Show options to edit or delete job
+                            _showJobOptionsDialog(job);
+                          },
                         ),
                       );
                     },
@@ -412,6 +419,39 @@ class _JobManagementState extends State<JobManagement> {
           ],
         ),
       ),
+    );
+  }
+
+  // Method to show dialog for editing or deleting a job
+  void _showJobOptionsDialog(Job job) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Job Options'),
+          content: const Text('Would you like to edit or delete this job?'),
+          actions: [
+            TextButton(
+              child: const Text('Edit'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                _editingJobId = job.jobId;
+                _titleController.text = job.title;
+                _descriptionController.text = job.description;
+                setState(() {});
+              },
+            ),
+            TextButton(
+              child: const Text('Delete'),
+              onPressed: () async {
+                Navigator.of(context).pop();
+                await _deleteJob(job.jobId);
+                _showSuccess('Job deleted successfully!');
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 }
