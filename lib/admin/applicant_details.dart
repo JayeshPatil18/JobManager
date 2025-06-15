@@ -1,15 +1,41 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:job_manager/services/job_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class ApplicantDetailsPage extends StatelessWidget {
+class ApplicantDetailsPage extends StatefulWidget {
   final Map<String, dynamic> applicant;
 
   const ApplicantDetailsPage({super.key, required this.applicant});
 
   @override
+  State<ApplicantDetailsPage> createState() => _ApplicantDetailsPageState();
+}
+
+class _ApplicantDetailsPageState extends State<ApplicantDetailsPage> {
+  late String currentStatus;
+  final List<String> statusOptions = [
+    'Pending',
+    'Shortlisted',
+    'Interview Scheduled',
+    'Selected',
+    'Rejected',
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    final statusFromData = widget.applicant['status'] ?? 'Pending';
+    if (statusOptions.contains(statusFromData)) {
+      currentStatus = statusFromData;
+    } else {
+      currentStatus = 'Pending'; // fallback if unknown
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    var appliedAt = (applicant['appliedAt'] as Timestamp).toDate();
+    var appliedAt = (widget.applicant['appliedAt'] as Timestamp).toDate();
 
     return Scaffold(
       appBar: AppBar(
@@ -22,7 +48,7 @@ class ApplicantDetailsPage extends StatelessWidget {
             ),
             const SizedBox(width: 10),
             Text(
-              '${applicant['name']}',
+              '${widget.applicant['name']}',
               style: const TextStyle(color: Colors.white),
             ),
           ],
@@ -41,139 +67,61 @@ class ApplicantDetailsPage extends StatelessWidget {
             padding: const EdgeInsets.all(16.0),
             child: SingleChildScrollView(
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Personal Details Card
-                  Card(
-                    elevation: 5,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    margin: const EdgeInsets.only(bottom: 16),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _infoText('Name', applicant['name']),
-                          _infoText('Status', applicant['status']),
-                          _infoText('Phone', applicant['phone']),
-                          _infoText('Email', applicant['email']),
-                          _infoText('Home Address', applicant['homeAddress']),
-                          _infoText('Notice Period', applicant['noticePeriod']),
-                          _infoText('Counter Offer', applicant['counterOffer']),
-                          _infoText('Applied At', appliedAt.toLocal().toString()),
-                        ],
-                      ),
-                    ),
-                  ),
+                  _buildCard([
+                    _infoText('Name', widget.applicant['name']),
+                    _infoText('Status', currentStatus),
+                    _infoText('Phone', widget.applicant['phone']),
+                    _infoText('Email', widget.applicant['email']),
+                    _infoText('Home Address', widget.applicant['homeAddress']),
+                    _infoText('Notice Period', widget.applicant['noticePeriod']),
+                    _infoText('Counter Offer', widget.applicant['counterOffer']),
+                    _infoText('Applied At', appliedAt.toLocal().toString()),
+                  ]),
 
-                  // Resume and Cover Letter Card
-                  Card(
-                    elevation: 5,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                  // Status Update Radio Buttons
+                  _buildCard([
+                    const Text("Update Application Status", style: TextStyle(fontWeight: FontWeight.bold)),
+                    ...statusOptions.map((status) => RadioListTile(
+                      title: Text(status),
+                      value: status,
+                      groupValue: currentStatus,
+                      onChanged: (value) {
+                        setState(() {
+                          currentStatus = value!;
+                        });
+                      },
+                    )),
+                    ElevatedButton(
+                      onPressed: _updateStatus,
+                      child: const Text("Save Status"),
                     ),
-                    margin: const EdgeInsets.only(bottom: 16),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _infoText('Cover Letter URL', applicant['coverLetter']),
-                          _infoText('Resume URL', applicant['resumeURL']),
-                        ],
-                      ),
-                    ),
-                  ),
+                  ]),
 
-                  // LinkedIn and GitHub Card
-                  Card(
-                    elevation: 5,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    margin: const EdgeInsets.only(bottom: 16),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _infoText('LinkedIn', applicant['linkedinURL']),
-                          _infoText('GitHub', applicant['githubURL']),
-                        ],
-                      ),
-                    ),
-                  ),
+                  // Resume and Cover Letter
+                  _buildCard([
+                    _infoText('Cover Letter URL', widget.applicant['coverLetter']),
+                    _infoText('Resume URL', widget.applicant['resumeURL']),
+                  ]),
 
-                  // Buttons in two horizontal rows
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: Column(
-                      children: [
-                        Row(
-                          children: [
-                            Expanded(
-                              child: ElevatedButton.icon(
-                                onPressed: () => _openUrl(context, applicant['linkedinURL']),
-                                icon: const Icon(Icons.link),
-                                label: const Text('LinkedIn'),
-                                style: ElevatedButton.styleFrom(
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: ElevatedButton.icon(
-                                onPressed: () => _openUrl(context, applicant['githubURL']),
-                                icon: const Icon(Icons.code),
-                                label: const Text('GitHub'),
-                                style: ElevatedButton.styleFrom(
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: ElevatedButton.icon(
-                                onPressed: () => _openUrl(context, applicant['resumeURL']),
-                                icon: const Icon(Icons.document_scanner),
-                                label: const Text('Resume'),
-                                style: ElevatedButton.styleFrom(
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: ElevatedButton.icon(
-                                onPressed: () => _openUrl(context, applicant['coverLetter']),
-                                icon: const Icon(Icons.description),
-                                label: const Text('Cover Letter'),
-                                style: ElevatedButton.styleFrom(
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
+                  // LinkedIn and GitHub
+                  _buildCard([
+                    _infoText('LinkedIn', widget.applicant['linkedinURL']),
+                    _infoText('GitHub', widget.applicant['githubURL']),
+                  ]),
+
+                  // Buttons in two rows
+                  _buildButtonRow([
+                    _buildLinkButton('LinkedIn', Icons.link, widget.applicant['linkedinURL']),
+                    _buildLinkButton('GitHub', Icons.code, widget.applicant['githubURL']),
+                  ]),
+                  const SizedBox(height: 8),
+                  _buildButtonRow([
+                    _buildLinkButton('Resume', Icons.document_scanner, widget.applicant['resumeURL']),
+                    _buildLinkButton('Cover Letter', Icons.description, widget.applicant['coverLetter']),
+                  ]),
                 ],
               ),
             ),
@@ -183,7 +131,18 @@ class ApplicantDetailsPage extends StatelessWidget {
     );
   }
 
-  /// Helper method for bold label + regular value text
+  Widget _buildCard(List<Widget> children) {
+    return Card(
+      elevation: 5,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      margin: const EdgeInsets.only(bottom: 16),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: children),
+      ),
+    );
+  }
+
   Widget _infoText(String label, String value) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8.0),
@@ -191,20 +150,30 @@ class ApplicantDetailsPage extends StatelessWidget {
         text: TextSpan(
           style: const TextStyle(fontSize: 16, color: Colors.black87),
           children: [
-            TextSpan(
-              text: '$label: ',
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-            TextSpan(
-              text: value,
-            ),
+            TextSpan(text: '$label: ', style: const TextStyle(fontWeight: FontWeight.bold)),
+            TextSpan(text: value),
           ],
         ),
       ),
     );
   }
 
-  /// Method to open a URL
+  Widget _buildButtonRow(List<Widget> buttons) {
+    return Row(
+      children: buttons
+          .map((button) => Expanded(child: Padding(padding: const EdgeInsets.symmetric(horizontal: 4.0), child: button)))
+          .toList(),
+    );
+  }
+
+  Widget _buildLinkButton(String label, IconData icon, String url) {
+    return ElevatedButton.icon(
+      onPressed: () => _openUrl(context, url),
+      icon: Icon(icon),
+      label: Text(label),
+    );
+  }
+
   Future<void> _openUrl(BuildContext context, String url) async {
     if (await canLaunch(url)) {
       await launch(url);
@@ -213,22 +182,32 @@ class ApplicantDetailsPage extends StatelessWidget {
     }
   }
 
-  /// Show error alert
   void _showError(BuildContext context, String message) {
     showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Error'),
-          content: Text(message),
-          actions: [
-            TextButton(
-              child: const Text('OK'),
-              onPressed: () => Navigator.of(context).pop(),
-            ),
-          ],
-        );
-      },
+      builder: (_) => AlertDialog(
+        title: const Text('Error'),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('OK'),
+          )
+        ],
+      ),
     );
+  }
+
+  Future<void> _updateStatus() async {
+    try {
+      JobService _jobService = JobService();
+      await _jobService.updateApplicantStatus(widget.applicant['applicantId'], currentStatus);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Status updated successfully')),
+      );
+    } catch (e) {
+      _showError(context, 'Failed to update status: $e');
+    }
   }
 }
