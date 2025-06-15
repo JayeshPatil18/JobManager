@@ -22,6 +22,7 @@ class _JobListingsState extends State<JobListings> {
   List<Job> _filteredJobs = [];
   bool _isLoading = true; // Loading state to display loading spinner
   bool _isSortedDescending = true; // Flag to toggle between ascending/descending sort
+  String _sortingCriterion = 'Latest Uploaded'; // Default sorting criterion
 
   // Fetch all jobs initially
   void _fetchJobs() async {
@@ -63,18 +64,26 @@ class _JobListingsState extends State<JobListings> {
     });
   }
 
-  // Sort jobs by date (ascending or descending)
-  void _sortJobsByDate() {
+  // Sort jobs by selected criterion (Latest Uploaded or Deadline)
+  void _sortJobs() {
     setState(() {
-      _isSortedDescending = !_isSortedDescending;
-      _filteredJobs.sort((a, b) {
-        // Assuming the 'date' field is a Timestamp object
-        if (_isSortedDescending) {
-          return b.createdAt.compareTo(a.createdAt); // Descending
-        } else {
-          return a.createdAt.compareTo(b.createdAt); // Ascending
-        }
-      });
+      if (_sortingCriterion == 'Latest Uploaded') {
+        _filteredJobs.sort((a, b) {
+          if (_isSortedDescending) {
+            return b.createdAt.compareTo(a.createdAt); // Descending
+          } else {
+            return a.createdAt.compareTo(b.createdAt); // Ascending
+          }
+        });
+      } else if (_sortingCriterion == 'Deadline') {
+        _filteredJobs.sort((a, b) {
+          if (_isSortedDescending) {
+            return (b.deadline ?? DateTime.now()).compareTo(a.deadline ?? DateTime.now()); // Descending
+          } else {
+            return (a.deadline ?? DateTime.now()).compareTo(b.deadline ?? DateTime.now()); // Ascending
+          }
+        });
+      }
     });
   }
 
@@ -100,11 +109,6 @@ class _JobListingsState extends State<JobListings> {
           IconButton(
             icon: Icon(Icons.logout, color: Colors.white),
             onPressed: () => _loginService.handleLogout(context),
-          ),
-          // Sort button to toggle sorting order
-          IconButton(
-            icon: Icon(_isSortedDescending ? Icons.arrow_downward : Icons.arrow_upward, color: Colors.white),
-            onPressed: _sortJobsByDate, // Call the sort function
           ),
         ],
       ),
@@ -134,6 +138,54 @@ class _JobListingsState extends State<JobListings> {
                 },
               ),
               const SizedBox(height: 16),
+
+              // Sorting Label and Buttons
+              Padding(
+                padding: const EdgeInsets.only(left: 10, right: 10),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Sort by: ',
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    ),
+                    SizedBox(width: 10),
+                    DropdownButton<String>(
+                      value: _sortingCriterion,
+                      items: <String>['Latest Uploaded', 'Deadline']
+                          .map<DropdownMenuItem<String>>((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          _sortingCriterion = value!;
+                          _sortJobs(); // Re-sort the list when a new sorting option is selected
+                        });
+                      },
+                    ),
+                    IconButton(
+                      icon: Icon(
+                        _isSortedDescending
+                            ? Icons.arrow_downward
+                            : Icons.arrow_upward,
+                        color: Colors.black,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _isSortedDescending = !_isSortedDescending; // Toggle sorting order
+                          _sortJobs(); // Re-sort the list when order is toggled
+                        });
+                      },
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
               // Job List with Card Decoration
               _isLoading
                   ? Center(child: CircularProgressIndicator()) // Show loading spinner while data is being fetched
