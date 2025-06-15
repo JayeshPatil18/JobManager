@@ -134,56 +134,73 @@ class ApplicantDetailsPage extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(vertical: 8.0),
                     child: Column(
                       children: [
-                        ElevatedButton.icon(
-                          onPressed: () =>
-                              _openUrl(context, applicant['linkedinURL']),
-                          icon: const Icon(Icons.link),
-                          label: const Text('Open LinkedIn'),
-                          style: ElevatedButton.styleFrom(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                onPressed: () =>
+                                    _openUrl(context, applicant['linkedinURL']),
+                                icon: const Icon(Icons.link),
+                                label: const Text('LinkedIn'),
+                                style: ElevatedButton.styleFrom(
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                              ),
                             ),
-                          ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                onPressed: () =>
+                                    _openUrl(context, applicant['githubURL']),
+                                icon: const Icon(Icons.code),
+                                label: const Text('GitHub'),
+                                style: ElevatedButton.styleFrom(
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                         const SizedBox(height: 8),
-                        ElevatedButton.icon(
-                          onPressed: () =>
-                              _openUrl(context, applicant['githubURL']),
-                          icon: const Icon(Icons.code),
-                          label: const Text('Open GitHub'),
-                          style: ElevatedButton.styleFrom(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                onPressed: () =>
+                                    _openUrl(context, applicant['resumeURL']),
+                                icon: const Icon(Icons.document_scanner),
+                                label: const Text('Resume'),
+                                style: ElevatedButton.styleFrom(
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                              ),
                             ),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        ElevatedButton.icon(
-                          onPressed: () =>
-                              _openUrl(context, applicant['resumeURL']),
-                          icon: const Icon(Icons.document_scanner),
-                          label: const Text('Open Resume'),
-                          style: ElevatedButton.styleFrom(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                onPressed: () =>
+                                    _openUrl(context, applicant['coverLetter']),
+                                icon: const Icon(Icons.description),
+                                label: const Text('Cover Letter'),
+                                style: ElevatedButton.styleFrom(
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                              ),
                             ),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        ElevatedButton.icon(
-                          onPressed: () =>
-                              _openUrl(context, applicant['coverLetter']),
-                          icon: const Icon(Icons.description),
-                          label: const Text('Open Cover Letter'),
-                          style: ElevatedButton.styleFrom(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
+                          ],
                         ),
                       ],
                     ),
                   ),
+
                 ],
               ),
             ),
