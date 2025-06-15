@@ -18,28 +18,53 @@ class _JobListingsState extends State<JobListings> {
 
   final TextEditingController _searchController = TextEditingController();
   List<Job> _jobs = [];
+  List<Job> _filteredJobs = [];
+  bool _isLoading = true; // Loading state to display loading spinner
 
-  // Search jobs by keyword
-  void _searchJobs() async {
-    String keyword = _searchController.text.trim();
-    if (keyword.isNotEmpty) {
-      var jobs = await _jobService.searchJobs(keyword);
-      setState(() {
-        _jobs = jobs;
-      });
-    } else {
-      // If the search field is empty, fetch all jobs
+  // Fetch all jobs initially
+  void _fetchJobs() async {
+    try {
       var jobs = await _jobService.fetchJobs();
       setState(() {
         _jobs = jobs;
+        _filteredJobs = jobs; // Initially show all jobs
+        _isLoading = false;
       });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error fetching jobs: $e')));
     }
+  }
+
+  // Search jobs by keyword (filtering the already fetched list)
+  void _searchJobs(String keyword) {
+    setState(() {
+      _isLoading = true; // Set loading to true while fetching data
+    });
+
+    // If the search field is empty, display all jobs
+    if (keyword.isEmpty) {
+      setState(() {
+        _filteredJobs = _jobs;
+        _isLoading = false;
+      });
+      return;
+    }
+
+    // Perform the search in memory (array search)
+    var filteredJobs = _jobs.where((job) {
+      return job.title.toLowerCase().contains(keyword.toLowerCase());
+    }).toList();
+
+    setState(() {
+      _filteredJobs = filteredJobs;
+      _isLoading = false; // Set loading to false after fetching the data
+    });
   }
 
   @override
   void initState() {
     super.initState();
-    _searchJobs(); // Load all jobs on initial load
+    _fetchJobs(); // Fetch all jobs on initial load
   }
 
   @override
@@ -83,16 +108,18 @@ class _JobListingsState extends State<JobListings> {
                   prefixIcon: Icon(Icons.search),
                 ),
                 onChanged: (value) {
-                  _searchJobs();
+                  _searchJobs(value); // Call searchJobs method when the user types
                 },
               ),
               const SizedBox(height: 16),
               // Job List with Card Decoration
-              Expanded(
+              _isLoading
+                  ? Center(child: CircularProgressIndicator()) // Show loading spinner while data is being fetched
+                  : Expanded(
                 child: ListView.builder(
-                  itemCount: _jobs.length,
+                  itemCount: _filteredJobs.length,
                   itemBuilder: (context, index) {
-                    Job job = _jobs[index];
+                    Job job = _filteredJobs[index];
                     return FutureBuilder<bool>(
                       future: _jobService.hasApplied(job.jobId, MyApp.loggedInUserId),
                       builder: (context, snapshot) {
