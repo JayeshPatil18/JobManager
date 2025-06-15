@@ -22,11 +22,6 @@ class JobCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Format the deadline if it exists
-    String formattedDeadline = job.deadline != null
-        ? DateFormat('yyyy-MM-dd').format(job.deadline!) // Format as per your requirement
-        : "No deadline";
-
     // Get the truncated description
     String truncatedDescription = getTruncatedDescription(job.description);
 
@@ -44,9 +39,20 @@ class JobCard extends StatelessWidget {
           children: [
             Text(truncatedDescription), // Display truncated description
             SizedBox(height: 8),
-            Text(
-              'Deadline: $formattedDeadline', // Display deadline here
-              style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+            FutureBuilder<bool>(
+              future: JobService().hasApplied(job.jobId, userId), // Check if user has applied
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const CircularProgressIndicator();
+                }
+
+                bool hasApplied = snapshot.data ?? false;
+                return Text(
+                  hasApplied ? 'You have already applied' :
+                  'Deadline: ${job.deadline != null ? DateFormat('yyyy-MM-dd').format(job.deadline!) : "No deadline"}',
+                  style: TextStyle(color: hasApplied ? Colors.grey : Colors.red, fontWeight: FontWeight.bold),
+                );
+              },
             ),
           ],
         ),
