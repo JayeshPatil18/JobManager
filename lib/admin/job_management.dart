@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart'; // For opening links
 import '../models/job.dart';
 import '../services/job_service.dart';
@@ -294,10 +295,33 @@ class _JobManagementState extends State<JobManagement> {
     );
   }
 
+  Future<void> handleLogout(BuildContext context) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.clear();
+
+    Navigator.popUntil(context, (route) => route.isFirst);
+    Navigator.pushReplacementNamed(context, '/admin_login');
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Manage Jobs')),
+      appBar: AppBar(
+        title: Row(
+          children: [
+            SizedBox(width: 10),
+            Text('Manange Jobs'),
+          ],
+        ),
+        automaticallyImplyLeading: false,
+        actions: [
+          IconButton(
+            icon: Icon(Icons.logout, color: Colors.white),
+            onPressed: () => handleLogout(context),
+          ),
+        ],
+      ),
       body: Container(
         decoration: BoxDecoration(
           image: DecorationImage(
