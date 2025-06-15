@@ -9,7 +9,6 @@ class ApplicantDetailsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Convert appliedAt timestamp to DateTime
     var appliedAt = (applicant['appliedAt'] as Timestamp).toDate();
 
     return Scaffold(
@@ -18,22 +17,22 @@ class ApplicantDetailsPage extends StatelessWidget {
         title: Row(
           children: [
             IconButton(
-              icon: const Icon(Icons.arrow_back, color: Colors.white), // White icon
+              icon: const Icon(Icons.arrow_back, color: Colors.white),
               onPressed: () => Navigator.pop(context),
             ),
             const SizedBox(width: 10),
             Text(
               '${applicant['name']}',
-              style: TextStyle(color: Colors.white), // White title text color
+              style: const TextStyle(color: Colors.white),
             ),
           ],
         ),
-        backgroundColor: Colors.deepPurple, // Consistent background color
+        backgroundColor: Colors.deepPurple,
       ),
       body: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           image: DecorationImage(
-            image: AssetImage("assets/images/bg_dashboard.jpg"), // Set your background image
+            image: AssetImage("assets/images/bg_dashboard.jpg"),
             fit: BoxFit.cover,
           ),
         ),
@@ -42,9 +41,10 @@ class ApplicantDetailsPage extends StatelessWidget {
             padding: const EdgeInsets.all(16.0),
             child: SingleChildScrollView(
               child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Applicant's Name and Details Section
+                  // Personal Details Card
                   Card(
                     elevation: 5,
                     shape: RoundedRectangleBorder(
@@ -56,36 +56,20 @@ class ApplicantDetailsPage extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Name: ${applicant['name']}',
-                              style: Theme.of(context).textTheme.headline6),
-                          const SizedBox(height: 8),
-                          Text('Status: ${applicant['status']}',
-                              style: Theme.of(context).textTheme.bodyText1),
-                          const SizedBox(height: 8),
-                          Text('Phone: ${applicant['phone']}',
-                              style: Theme.of(context).textTheme.bodyText1),
-                          const SizedBox(height: 8),
-                          Text('Email: ${applicant['email']}',
-                              style: Theme.of(context).textTheme.bodyText1),
-                          const SizedBox(height: 8),
-                          Text('Home Address: ${applicant['homeAddress']}',
-                              style: Theme.of(context).textTheme.bodyText1),
-                          const SizedBox(height: 8),
-                          Text('Notice Period: ${applicant['noticePeriod']}',
-                              style: Theme.of(context).textTheme.bodyText1),
-                          const SizedBox(height: 8),
-                          Text('Counter Offer: ${applicant['counterOffer']}',
-                              style: Theme.of(context).textTheme.bodyText1),
-                          const SizedBox(height: 8),
-                          Text(
-                              'Applied At: ${appliedAt.toLocal()}',
-                              style: Theme.of(context).textTheme.bodyText1),
+                          _infoText('Name', applicant['name']),
+                          _infoText('Status', applicant['status']),
+                          _infoText('Phone', applicant['phone']),
+                          _infoText('Email', applicant['email']),
+                          _infoText('Home Address', applicant['homeAddress']),
+                          _infoText('Notice Period', applicant['noticePeriod']),
+                          _infoText('Counter Offer', applicant['counterOffer']),
+                          _infoText('Applied At', appliedAt.toLocal().toString()),
                         ],
                       ),
                     ),
                   ),
 
-                  // Resume and Cover Letter Links
+                  // Resume and Cover Letter Card
                   Card(
                     elevation: 5,
                     shape: RoundedRectangleBorder(
@@ -97,17 +81,14 @@ class ApplicantDetailsPage extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Cover Letter: ${applicant['coverLetter']}',
-                              style: Theme.of(context).textTheme.bodyText1),
-                          const SizedBox(height: 8),
-                          Text('Resume URL: ${applicant['resumeURL']}',
-                              style: Theme.of(context).textTheme.bodyText1),
+                          _infoText('Cover Letter URL', applicant['coverLetter']),
+                          _infoText('Resume URL', applicant['resumeURL']),
                         ],
                       ),
                     ),
                   ),
 
-                  // LinkedIn and GitHub Links
+                  // LinkedIn and GitHub Card
                   Card(
                     elevation: 5,
                     shape: RoundedRectangleBorder(
@@ -119,17 +100,14 @@ class ApplicantDetailsPage extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('LinkedIn: ${applicant['linkedinURL']}',
-                              style: Theme.of(context).textTheme.bodyText1),
-                          const SizedBox(height: 8),
-                          Text('GitHub: ${applicant['githubURL']}',
-                              style: Theme.of(context).textTheme.bodyText1),
+                          _infoText('LinkedIn', applicant['linkedinURL']),
+                          _infoText('GitHub', applicant['githubURL']),
                         ],
                       ),
                     ),
                   ),
 
-                  // Buttons to open LinkedIn, GitHub, Resume links, and Cover Letter
+                  // Buttons in two horizontal rows
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8.0),
                     child: Column(
@@ -138,8 +116,7 @@ class ApplicantDetailsPage extends StatelessWidget {
                           children: [
                             Expanded(
                               child: ElevatedButton.icon(
-                                onPressed: () =>
-                                    _openUrl(context, applicant['linkedinURL']),
+                                onPressed: () => _openUrl(context, applicant['linkedinURL']),
                                 icon: const Icon(Icons.link),
                                 label: const Text('LinkedIn'),
                                 style: ElevatedButton.styleFrom(
@@ -152,8 +129,7 @@ class ApplicantDetailsPage extends StatelessWidget {
                             const SizedBox(width: 8),
                             Expanded(
                               child: ElevatedButton.icon(
-                                onPressed: () =>
-                                    _openUrl(context, applicant['githubURL']),
+                                onPressed: () => _openUrl(context, applicant['githubURL']),
                                 icon: const Icon(Icons.code),
                                 label: const Text('GitHub'),
                                 style: ElevatedButton.styleFrom(
@@ -170,8 +146,7 @@ class ApplicantDetailsPage extends StatelessWidget {
                           children: [
                             Expanded(
                               child: ElevatedButton.icon(
-                                onPressed: () =>
-                                    _openUrl(context, applicant['resumeURL']),
+                                onPressed: () => _openUrl(context, applicant['resumeURL']),
                                 icon: const Icon(Icons.document_scanner),
                                 label: const Text('Resume'),
                                 style: ElevatedButton.styleFrom(
@@ -184,8 +159,7 @@ class ApplicantDetailsPage extends StatelessWidget {
                             const SizedBox(width: 8),
                             Expanded(
                               child: ElevatedButton.icon(
-                                onPressed: () =>
-                                    _openUrl(context, applicant['coverLetter']),
+                                onPressed: () => _openUrl(context, applicant['coverLetter']),
                                 icon: const Icon(Icons.description),
                                 label: const Text('Cover Letter'),
                                 style: ElevatedButton.styleFrom(
@@ -200,7 +174,6 @@ class ApplicantDetailsPage extends StatelessWidget {
                       ],
                     ),
                   ),
-
                 ],
               ),
             ),
@@ -210,7 +183,28 @@ class ApplicantDetailsPage extends StatelessWidget {
     );
   }
 
-  // Method to open a URL (LinkedIn, GitHub, Resume, Cover Letter)
+  /// Helper method for bold label + regular value text
+  Widget _infoText(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8.0),
+      child: RichText(
+        text: TextSpan(
+          style: const TextStyle(fontSize: 16, color: Colors.black87),
+          children: [
+            TextSpan(
+              text: '$label: ',
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            TextSpan(
+              text: value,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Method to open a URL
   Future<void> _openUrl(BuildContext context, String url) async {
     if (await canLaunch(url)) {
       await launch(url);
@@ -219,7 +213,7 @@ class ApplicantDetailsPage extends StatelessWidget {
     }
   }
 
-  // Method to show error message
+  /// Show error alert
   void _showError(BuildContext context, String message) {
     showDialog(
       context: context,
