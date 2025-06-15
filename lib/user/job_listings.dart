@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:job_manager/services/job_service.dart';
 import 'package:job_manager/models/job.dart';
+import '../main.dart';
 import '../services/auth_service.dart';
 import 'job_detail.dart'; // To navigate to job details and apply
 
@@ -17,7 +18,6 @@ class _JobListingsState extends State<JobListings> {
 
   final TextEditingController _searchController = TextEditingController();
   List<Job> _jobs = [];
-  String _userId = 'user_id_123'; // Assume this is fetched from shared preferences or Firebase
 
   // Search jobs by keyword
   void _searchJobs() async {
@@ -94,7 +94,7 @@ class _JobListingsState extends State<JobListings> {
                   itemBuilder: (context, index) {
                     Job job = _jobs[index];
                     return FutureBuilder<bool>(
-                      future: _jobService.hasApplied(job.jobId, _userId),
+                      future: _jobService.hasApplied(job.jobId, MyApp.loggedInUserId),
                       builder: (context, snapshot) {
                         if (snapshot.connectionState == ConnectionState.waiting) {
                           return const CircularProgressIndicator();
@@ -131,7 +131,7 @@ class _JobListingsState extends State<JobListings> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => JobDetail(job: job, userId: _userId),
+                                  builder: (context) => JobDetail(job: job, userId: MyApp.loggedInUserId),
                                 ),
                               );
                             },

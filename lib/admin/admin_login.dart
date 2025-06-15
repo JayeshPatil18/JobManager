@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:job_manager/main.dart';
 import 'package:job_manager/services/auth_service.dart';
 import 'package:job_manager/user/job_listings.dart';
 import 'package:job_manager/user/signup_page.dart';
@@ -79,14 +80,12 @@ class _AdminLoginState extends State<AdminLogin> {
 // Check if the user is already logged in
   Future<void> _checkUserLoginStatus() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? userId = prefs.getString('userId');
-    String? role = prefs.getString('role'); // Retrieve the role
+    String? userId = prefs.getString(MyApp.LOGIN_ID_KEY);
+    String? role = prefs.getString(MyApp.LOGIN_TYPE_KEY); // Retrieve the role
 
     if (userId != null && role != null) {
       // User is already logged in
       // Navigate to the appropriate screen based on the role
-
-      print('###${role}');
 
       if (role == 'admin') {
         Navigator.pushReplacement(

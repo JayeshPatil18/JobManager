@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:job_manager/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginService {
@@ -45,8 +46,8 @@ class LoginService {
   // Store userId and role in SharedPreferences
   Future<void> _storeUserData(String userId, String role) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString('userId', userId);
-    await prefs.setString('role', role);
+    await prefs.setString(MyApp.LOGIN_ID_KEY, userId);
+    await prefs.setString(MyApp.LOGIN_TYPE_KEY, role);
   }
 
   Future<void> handleLogout(BuildContext context) async {

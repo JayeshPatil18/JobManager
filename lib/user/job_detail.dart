@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:job_manager/services/job_service.dart';
 import 'package:job_manager/models/job.dart';
+import 'job_form.dart';
 
 class JobDetail extends StatefulWidget {
   final Job job;
@@ -14,13 +15,8 @@ class JobDetail extends StatefulWidget {
 }
 
 class _JobDetailState extends State<JobDetail> {
-  final TextEditingController _resumeController = TextEditingController();
-  final TextEditingController _coverLetterController = TextEditingController();
-  final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _linkedinController = TextEditingController();
-  final TextEditingController _githubController = TextEditingController();
   bool _hasApplied = false;
-  final _formKey = GlobalKey<FormState>(); // Form key for validation
+  bool _isLoading = true; // Add a loading flag to manage the loading state
 
   @override
   void initState() {
@@ -33,32 +29,8 @@ class _JobDetailState extends State<JobDetail> {
     bool hasApplied = await JobService().hasApplied(widget.job.jobId, widget.userId);
     setState(() {
       _hasApplied = hasApplied;
+      _isLoading = false; // Set loading to false after fetching the data
     });
-  }
-
-  // Submit application
-  void _applyForJob() async {
-    if (_formKey.currentState!.validate()) {
-      try {
-        await JobService().addApplication({
-          'jobId': widget.job.jobId,
-          'userId': widget.userId,
-          'name': _nameController.text,
-          'resumeURL': _resumeController.text,
-          'coverLetter': _coverLetterController.text,
-          'linkedinURL': _linkedinController.text,
-          'githubURL': _githubController.text,
-          'status': 'pending',
-          'appliedAt': Timestamp.now(),
-        });
-        setState(() {
-          _hasApplied = true;
-        });
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Application submitted')));
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to apply: $e')));
-      }
-    }
   }
 
   @override
@@ -126,130 +98,20 @@ class _JobDetailState extends State<JobDetail> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                ElevatedButton(
+                _isLoading
+                    ? Container(child: CircularProgressIndicator()) // Show loading spinner while checking
+                    : ElevatedButton(
                   onPressed: _hasApplied
                       ? null
                       : () {
-                    showModalBottomSheet(
-                      context: context,
-                      isScrollControlled: true,
-                      shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => JobApplicationForm(
+                          job: widget.job,
+                          userId: widget.userId,
+                        ),
                       ),
-                      builder: (context) {
-                        return Padding(
-                          padding: EdgeInsets.only(
-                            bottom: MediaQuery.of(context).viewInsets.bottom,
-                            top: 24,
-                            left: 16,
-                            right: 16,
-                          ),
-                          child: Form(
-                            key: _formKey, // Connect the form key for validation
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'Enter Resume URL, Cover Letter, LinkedIn, and GitHub',
-                                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                                ),
-                                const SizedBox(height: 10),
-                                TextFormField(
-                                  controller: _nameController,
-                                  decoration: const InputDecoration(
-                                    labelText: 'Name',
-                                    border: OutlineInputBorder(),
-                                    prefixIcon: Icon(Icons.person),
-                                  ),
-                                  validator: (value) {
-                                    if (value == null || value.isEmpty) {
-                                      return 'Please enter your name';
-                                    }
-                                    return null;
-                                  },
-                                ),
-                                const SizedBox(height: 10),
-                                TextFormField(
-                                  controller: _resumeController,
-                                  decoration: const InputDecoration(
-                                    labelText: 'Resume URL',
-                                    border: OutlineInputBorder(),
-                                    prefixIcon: Icon(Icons.attach_file),
-                                  ),
-                                  validator: (value) {
-                                    if (value == null || value.isEmpty) {
-                                      return 'Please provide your resume URL';
-                                    }
-                                    return null;
-                                  },
-                                ),
-                                const SizedBox(height: 10),
-                                TextFormField(
-                                  controller: _coverLetterController,
-                                  decoration: const InputDecoration(
-                                    labelText: 'Cover Letter',
-                                    border: OutlineInputBorder(),
-                                    prefixIcon: Icon(Icons.text_fields),
-                                  ),
-                                  validator: (value) {
-                                    if (value == null || value.isEmpty) {
-                                      return 'Please provide a cover letter';
-                                    }
-                                    return null;
-                                  },
-                                ),
-                                const SizedBox(height: 10),
-                                TextFormField(
-                                  controller: _linkedinController,
-                                  decoration: const InputDecoration(
-                                    labelText: 'LinkedIn URL',
-                                    border: OutlineInputBorder(),
-                                    prefixIcon: Icon(Icons.link),
-                                  ),
-                                  validator: (value) {
-                                    if (value == null || value.isEmpty) {
-                                      return 'Please provide your LinkedIn URL';
-                                    }
-                                    return null;
-                                  },
-                                ),
-                                const SizedBox(height: 10),
-                                TextFormField(
-                                  controller: _githubController,
-                                  decoration: const InputDecoration(
-                                    labelText: 'GitHub URL',
-                                    border: OutlineInputBorder(),
-                                    prefixIcon: Icon(Icons.code),
-                                  ),
-                                  validator: (value) {
-                                    if (value == null || value.isEmpty) {
-                                      return 'Please provide your GitHub URL';
-                                    }
-                                    return null;
-                                  },
-                                ),
-                                const SizedBox(height: 20),
-                                SizedBox(
-                                  width: double.infinity,
-                                  child: ElevatedButton(
-                                    onPressed: _applyForJob,
-                                    child: const Text('Submit Application'),
-                                    style: ElevatedButton.styleFrom(
-                                      primary: Colors.deepPurple, // Button color
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      padding: const EdgeInsets.symmetric(vertical: 14),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(height: 20),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
                     );
                   },
                   child: _hasApplied ? const Text('You have already applied') : const Text('Apply Now'),
