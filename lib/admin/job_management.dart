@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart'; // For opening links
 import '../models/job.dart';
+import '../services/auth_service.dart';
 import '../services/job_service.dart';
 
 class JobManagement extends StatefulWidget {
@@ -14,6 +15,7 @@ class JobManagement extends StatefulWidget {
 
 class _JobManagementState extends State<JobManagement> {
   final JobService _jobService = JobService();
+  final LoginService _loginService = LoginService();
 
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
@@ -295,14 +297,6 @@ class _JobManagementState extends State<JobManagement> {
     );
   }
 
-  Future<void> handleLogout(BuildContext context) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.clear();
-
-    Navigator.popUntil(context, (route) => route.isFirst);
-    Navigator.pushReplacementNamed(context, '/admin_login');
-  }
-
 
   @override
   Widget build(BuildContext context) {
@@ -318,7 +312,7 @@ class _JobManagementState extends State<JobManagement> {
         actions: [
           IconButton(
             icon: Icon(Icons.logout, color: Colors.white),
-            onPressed: () => handleLogout(context),
+            onPressed: () => _loginService.handleLogout(context),
           ),
         ],
       ),

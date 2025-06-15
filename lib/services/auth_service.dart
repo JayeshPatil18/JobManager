@@ -48,4 +48,12 @@ class LoginService {
     await prefs.setString('userId', userId);
     await prefs.setString('role', role);
   }
+
+  Future<void> handleLogout(BuildContext context) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.clear();
+
+    Navigator.popUntil(context, (route) => route.isFirst);
+    Navigator.pushReplacementNamed(context, '/admin_login');
+  }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:job_manager/services/job_service.dart';
 import 'package:job_manager/models/job.dart';
+import '../services/auth_service.dart';
 import 'job_detail.dart'; // To navigate to job details and apply
 
 class JobListings extends StatefulWidget {
@@ -12,6 +13,8 @@ class JobListings extends StatefulWidget {
 
 class _JobListingsState extends State<JobListings> {
   final JobService _jobService = JobService();
+  final LoginService _loginService = LoginService();
+
   final TextEditingController _searchController = TextEditingController();
   List<Job> _jobs = [];
   String _userId = 'user_id_123'; // Assume this is fetched from shared preferences or Firebase
@@ -42,7 +45,21 @@ class _JobListingsState extends State<JobListings> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Job Listings')),
+      appBar: AppBar(
+        title: Row(
+          children: [
+            SizedBox(width: 10),
+            Text('Jobs Listing'),
+          ],
+        ),
+        automaticallyImplyLeading: false,
+        actions: [
+          IconButton(
+            icon: Icon(Icons.logout, color: Colors.white),
+            onPressed: () => _loginService.handleLogout(context),
+          ),
+        ],
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
