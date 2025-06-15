@@ -20,6 +20,7 @@ class _JobListingsState extends State<JobListings> {
   List<Job> _jobs = [];
   List<Job> _filteredJobs = [];
   bool _isLoading = true; // Loading state to display loading spinner
+  bool _isSortedDescending = true; // Flag to toggle between ascending/descending sort
 
   // Fetch all jobs initially
   void _fetchJobs() async {
@@ -61,6 +62,21 @@ class _JobListingsState extends State<JobListings> {
     });
   }
 
+  // Sort jobs by date (ascending or descending)
+  void _sortJobsByDate() {
+    setState(() {
+      _isSortedDescending = !_isSortedDescending;
+      _filteredJobs.sort((a, b) {
+        // Assuming the 'date' field is a Timestamp object
+        if (_isSortedDescending) {
+          return b.createdAt.compareTo(a.createdAt); // Descending
+        } else {
+          return a.createdAt.compareTo(b.createdAt); // Ascending
+        }
+      });
+    });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -83,6 +99,11 @@ class _JobListingsState extends State<JobListings> {
           IconButton(
             icon: Icon(Icons.logout, color: Colors.white),
             onPressed: () => _loginService.handleLogout(context),
+          ),
+          // Sort button to toggle sorting order
+          IconButton(
+            icon: Icon(_isSortedDescending ? Icons.arrow_downward : Icons.arrow_upward, color: Colors.white),
+            onPressed: _sortJobsByDate, // Call the sort function
           ),
         ],
       ),

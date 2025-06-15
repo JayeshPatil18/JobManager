@@ -20,7 +20,7 @@ class _AdminLoginState extends State<AdminLogin> {
   final TextEditingController _passwordController = TextEditingController();
   bool _isLoading = false;
   String? _errorMessage;
-  String _selectedRole = 'admin'; // Default role is admin
+  String _selectedRole = 'applicant'; // Default role is admin
 
   @override
   void initState() {
