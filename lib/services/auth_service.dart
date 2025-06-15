@@ -20,6 +20,11 @@ class LoginService {
 
 
         if (userDoc['email'] == email) {
+
+          if(userDoc['password'] != password) {
+            return 'Wrong password';
+          }
+
           String userId = userDoc['userId'];  // Fetch userId from the document
           String role = userDoc['role'];      // Fetch role from the document
 
