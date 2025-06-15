@@ -85,10 +85,11 @@ class _JobListingsState extends State<JobListings> {
                               ? const Chip(label: Text('Applied'))
                               : null,
                           onTap: () {
-                            // Show Job Detail in Bottom Sheet for applying
-                            showModalBottomSheet(
-                              context: context,
-                              builder: (context) => JobDetail(job: job, userId: _userId),
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => JobDetail(job: job, userId: _userId),
+                              ),
                             );
                           },
                         ),

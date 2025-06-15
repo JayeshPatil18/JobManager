@@ -57,28 +57,67 @@ class _JobDetailState extends State<JobDetail> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(widget.job.title, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 12),
-          Text(widget.job.description, style: const TextStyle(fontSize: 18)),
-          const SizedBox(height: 20),
-          if (!_hasApplied)
-            TextField(
-              controller: _resumeController,
-              decoration: const InputDecoration(labelText: 'Resume URL'),
+    return Scaffold(
+      appBar: AppBar(title: const Text('Job Detail')),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(widget.job.title, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 12),
+            Text(widget.job.description, style: const TextStyle(fontSize: 18)),
+            const Spacer(),
+            ElevatedButton(
+              onPressed: _hasApplied
+                  ? null
+                  : () {
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                  ),
+                  builder: (context) {
+                    return Padding(
+                      padding: EdgeInsets.only(
+                        bottom: MediaQuery.of(context).viewInsets.bottom,
+                        top: 24,
+                        left: 16,
+                        right: 16,
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Enter Resume URL', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                          const SizedBox(height: 10),
+                          TextField(
+                            controller: _resumeController,
+                            decoration: const InputDecoration(
+                              labelText: 'Resume URL',
+                              border: OutlineInputBorder(),
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: _applyForJob,
+                              child: const Text('Submit Application'),
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                        ],
+                      ),
+                    );
+                  },
+                );
+              },
+              child: _hasApplied ? const Text('You have already applied') : const Text('Apply Now'),
             ),
-          const SizedBox(height: 20),
-          ElevatedButton(
-            onPressed: _hasApplied ? null : _applyForJob,
-            child: _hasApplied
-                ? const Text('You have already applied')
-                : const Text('Apply Now'),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
