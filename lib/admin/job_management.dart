@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:job_manager/admin/applicant_details.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart'; // For opening links
 import '../models/job.dart';
@@ -112,7 +113,7 @@ class _JobManagementState extends State<JobManagement> {
     }
   }
 
-  // Method to show applicant details with status update functionality
+
   void _showApplicantBottomSheet(List<Map<String, dynamic>> applicants) {
     showModalBottomSheet(
       context: context,
@@ -127,25 +128,47 @@ class _JobManagementState extends State<JobManagement> {
               Text('Applicants:', style: Theme.of(context).textTheme.headline6),
               const SizedBox(height: 12),
 
-              // List applicants
+              // List applicants with better UI
               Expanded(
                 child: ListView.builder(
                   itemCount: applicants.length,
                   itemBuilder: (context, index) {
                     var applicant = applicants[index];
 
-                    // Displaying applicant details
-                    return Card(
-                      margin: const EdgeInsets.symmetric(vertical: 8),
-                      elevation: 5,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: ListTile(
-                        contentPadding: const EdgeInsets.all(16.0),
-                        title: Text(applicant['name']),
-                        subtitle: Text('Status: ${applicant['status']}'),
-                        onTap: () => _showApplicantDetails(applicant),
+                    // Convert appliedAt timestamp to DateTime
+                    var appliedAt = (applicant['appliedAt'] as Timestamp).toDate();
+
+                    return GestureDetector(
+                      onTap: () {
+                        // Navigate to the applicant details page
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ApplicantDetailsPage(applicant: applicant),
+                          ),
+                        );
+                      },
+                      child: Card(
+                        margin: const EdgeInsets.symmetric(vertical: 8),
+                        elevation: 5,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: ListTile(
+                          contentPadding: const EdgeInsets.all(16.0),
+                          title: Text(
+                            applicant['name'],
+                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          ),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('Status: ${applicant['status']}'),
+                              Text('Phone: ${applicant['phone']}'),
+                              Text('Applied At: ${appliedAt.toLocal()}'),
+                            ],
+                          ),
+                        ),
                       ),
                     );
                   },
@@ -157,6 +180,7 @@ class _JobManagementState extends State<JobManagement> {
       },
     );
   }
+
 
   // Show individual applicant details when tapped
   void _showApplicantDetails(Map<String, dynamic> applicant) {
