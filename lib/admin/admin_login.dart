@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:job_manager/services/auth_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'job_management.dart'; // Import the job management screen
 
@@ -22,9 +23,6 @@ class _AdminLoginState extends State<AdminLogin> {
     _checkUserLoginStatus();  // Check if the user is already logged in
   }
 
-  // Firebase Authentication instance
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-
   // Function to handle login
   Future<void> _login() async {
     setState(() {
@@ -33,21 +31,22 @@ class _AdminLoginState extends State<AdminLogin> {
     });
 
     try {
-      // Sign in with email and password
-      // UserCredential userCredential = await _auth.signInWithEmailAndPassword(
-      //   email: _emailController.text,
-      //   password: _passwordController.text,
-      // );
+      final LoginService _loginService = LoginService();
 
-      // Store the userId in SharedPreferences
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      // await prefs.setString('userId', userCredential.user!.uid);
+      String result = await _loginService.loginWithEmailPassword(_emailController.text, _passwordController.text);
 
-      // Navigate to job management screen
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const JobManagement()),
-      );
+      if(result == 'Login successful') {
+        // Navigate to job management screen
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const JobManagement()),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(result)),
+        );
+
+      }
     } on FirebaseAuthException catch (e) {
       setState(() {
         _errorMessage = e.message;
