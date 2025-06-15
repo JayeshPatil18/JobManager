@@ -302,6 +302,7 @@ class _JobManagementState extends State<JobManagement> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.deepPurple, // Consistent background color
         title: Row(
           children: [
             SizedBox(width: 10),

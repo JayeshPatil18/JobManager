@@ -97,7 +97,10 @@ class _AdminLoginState extends State<AdminLogin> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Admin Login')),
+      appBar: AppBar(
+          backgroundColor: Colors.deepPurple, // Consistent background color
+          title: const Text('Admin Login')
+      ),
       body: Container(
         decoration: BoxDecoration(
           image: DecorationImage(
