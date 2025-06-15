@@ -104,7 +104,7 @@ class JobService {
   Future<void> updateApplicantStatus(String applicantId, String status) async {
     try {
       await FirebaseFirestore.instance
-          .collection('applicants') // Assuming you have a separate 'applicants' collection
+          .collection('applications') // Assuming you store applications in a collection called 'applications'
           .doc(applicantId)
           .update({'status': status});
     } catch (e) {

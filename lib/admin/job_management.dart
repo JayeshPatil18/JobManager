@@ -91,24 +91,6 @@ class _JobManagementState extends State<JobManagement> {
     return await _jobService.fetchApplicantsCount(jobId);
   }
 
-  void _showError(String message) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Error'),
-          content: Text(message),
-          actions: [
-            TextButton(
-              child: const Text('OK'),
-              onPressed: () => Navigator.of(context).pop(),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   void _clearFields() {
     _titleController.clear();
     _descriptionController.clear();
@@ -127,7 +109,7 @@ class _JobManagementState extends State<JobManagement> {
     }
   }
 
-  // Bottom sheet to show applicants list and applicant details
+// Method to show applicant details with status update functionality
   void _showApplicantBottomSheet(List<Map<String, dynamic>> applicants) {
     showModalBottomSheet(
       context: context,
@@ -138,14 +120,18 @@ class _JobManagementState extends State<JobManagement> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Applicants List
+              // Title
               Text('Applicants:', style: Theme.of(context).textTheme.headline6),
               const SizedBox(height: 12),
+
+              // List applicants
               Expanded(
                 child: ListView.builder(
                   itemCount: applicants.length,
                   itemBuilder: (context, index) {
                     var applicant = applicants[index];
+
+                    // Displaying applicant details
                     return Card(
                       margin: const EdgeInsets.symmetric(vertical: 8),
                       elevation: 5,
@@ -153,8 +139,9 @@ class _JobManagementState extends State<JobManagement> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: ListTile(
+                        contentPadding: const EdgeInsets.all(16.0),
                         title: Text(applicant['name']),
-                        subtitle: Text('LinkedIn: ${applicant['linkedinURL']}'),
+                        subtitle: Text('Status: ${applicant['status']}'),
                         onTap: () => _showApplicantDetails(applicant),
                       ),
                     );
@@ -168,8 +155,11 @@ class _JobManagementState extends State<JobManagement> {
     );
   }
 
-  // Show individual applicant details when tapped
+// Show individual applicant details when tapped
   void _showApplicantDetails(Map<String, dynamic> applicant) {
+    // Ensure the applicant's status is one of the valid values
+    String applicantStatus = applicant['status'] ?? 'Pending';
+
     showModalBottomSheet(
       context: context,
       builder: (context) {
@@ -189,6 +179,39 @@ class _JobManagementState extends State<JobManagement> {
                   style: Theme.of(context).textTheme.bodyText2),
               Text('GitHub: ${applicant['githubURL']}',
                   style: Theme.of(context).textTheme.bodyText2),
+              const SizedBox(height: 16),
+
+              // Status update section
+              Text('Update Status:', style: Theme.of(context).textTheme.subtitle1),
+              const SizedBox(height: 8),
+
+              // Radio buttons for status selection
+              Column(
+                children: <String>['pending', 'accepted', 'rejected', 'interviewed']
+                    .map((String value) {
+                  return RadioListTile<String>(
+                    title: Text(value),
+                    value: value,
+                    groupValue: applicantStatus,
+                    onChanged: (String? newStatus) async {
+                      if (newStatus != null && newStatus != applicantStatus) {
+                        // Update the status in Firestore
+                        setState(() {
+                          applicant['status'] = newStatus;  // Update local state
+                        });
+
+                        try {
+                          await _jobService.updateApplicantStatus(applicant['applicantId'], newStatus);
+
+                          _showSuccess('Applicant status updated successfully!');
+                        } catch (e) {
+                          _showError('Error updating applicant status.');
+                        }
+                      }
+                    },
+                  );
+                }).toList(),
+              ),
               const SizedBox(height: 16),
 
               // Buttons to open LinkedIn, GitHub, and Resume links
@@ -226,6 +249,44 @@ class _JobManagementState extends State<JobManagement> {
               ),
             ],
           ),
+        );
+      },
+    );
+  }
+
+// Method to show success message
+  void _showSuccess(String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Success'),
+          content: Text(message),
+          actions: [
+            TextButton(
+              child: const Text('OK'),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+// Method to show error message
+  void _showError(String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Error'),
+          content: Text(message),
+          actions: [
+            TextButton(
+              child: const Text('OK'),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+          ],
         );
       },
     );
